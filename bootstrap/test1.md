@@ -13,6 +13,7 @@ This block is tangled to `test2.txt`
 
 prefix: <<<test file 1>>>
 <<<test block 1>>> :suffix
+<<<test block 2@test2.md>>>
 ```
 
 `test block 1+test file 1`:

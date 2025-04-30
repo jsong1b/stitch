@@ -3,6 +3,7 @@
 
 # a simple python script to bootstrap Stitch
 # will be replaced later with an old version of the actual Stitch script
+# very bad error handling cuz this is just temporary
 
 
 import os
@@ -31,17 +32,17 @@ def main():
     for block in blocks:
         if block.append_to == None:
             continue
-        err = append_block(block, blocks)
-        if err != None:
-            print(f"error appending block: {str(err)}")
-            sys.exit(1)
+        append_block(block, blocks)
 
+    # expand named references in `<<<>>>`
+    # also write to output file
     for block in blocks:
-        print("=====")
-        print(block.name)
-        print(block.file)
-        print(block.export_to)
-        print(block.contents)
+        if block.export_to == None:
+            continue
+        expand_refs(block, blocks)
+        print('=====')
+        for line in block.contents:
+            print(line)
 
 
 class Block:
@@ -111,7 +112,37 @@ def append_block(block, blocks):
 
         blocks[i].contents += block.contents
 
-    return None
+
+def expand_refs(block, blocks):
+    new_contents = []
+    lines = block.contents.copy()
+    for line in lines:
+        if not re.match('^.*<<<.+>>>.*$', line):
+            new_contents += [line]
+            continue
+
+        prefix = line.split('<<<')[0]
+        suffix = line.split('>>>')[1]
+
+        ref_name = re.findall(r'<<<.+>>>', line)[0][3:-3]
+        ref_file = block.file
+        if re.match(r'^.+@.+$', ref_name):
+            (ref_name, ref_file) = ref_name.split('@')
+
+        for b in blocks:
+            if ref_name != b.name or ref_file != b.file:
+                continue
+
+            expand_refs(b, blocks)
+            for ref_line in b.contents:
+                if ref_line == "":
+                    new_contents += [""]
+                    continue
+
+                new_contents += [prefix + ref_line + suffix]
+            new_contents += b.contents
+
+    block.contents = new_contents
 
 
 if __name__ == "__main__":
