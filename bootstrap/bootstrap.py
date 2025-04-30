@@ -27,11 +27,19 @@ def main():
 
         blocks += new_blocks
 
+    # append blocks to each other
     for block in blocks:
-        print("============================")
+        if block.append_to == None:
+            continue
+        err = append_block(block, blocks)
+        if err != None:
+            print(f"error appending block: {str(err)}")
+            sys.exit(1)
+
+    for block in blocks:
+        print("=====")
         print(block.name)
         print(block.file)
-        print(block.append_to)
         print(block.export_to)
         print(block.contents)
 
@@ -84,11 +92,26 @@ def extract_blocks(file_path):
         else:
             cur_block.name = line[1:-2]
 
-        if re.match(r"^.+\+.+$", cur_block.name):
+        if re.match(r"^.*\+.+$", cur_block.name):
             (cur_block.name, cur_block.append_to) = cur_block.name.split('+')
         state = "block named"
 
     return (None, blocks)
+
+
+def append_block(block, blocks):
+    append_block_name = block.append_to
+    append_block_file = block.file
+    if re.match(r'^.+@.+$', block.append_to):
+        (append_block_name, append_block_file) = block.append_to.split('@')
+
+    for i, b in enumerate(blocks):
+        if append_block_name != b.name or append_block_file != b.file:
+            continue
+
+        blocks[i].contents += block.contents
+
+    return None
 
 
 if __name__ == "__main__":
