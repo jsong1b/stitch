@@ -95,7 +95,13 @@ def extract_blocks(file_path):
             cur_block.name = line[1:-2]
 
         if re.match(r"^.*\+.+$", cur_block.name):
-            (cur_block.name, cur_block.append_to) = cur_block.name.split('+')
+            if len(cur_block.name.split('+')) != 2:
+                cur_block.name = ""
+                cur_block.append_to = cur_block.name[1:]
+            else:
+                (cur_block.name, cur_block.append_to) = cur_block.name.split(
+                    '+'
+                )
         state = "block named"
 
     return (None, blocks)
@@ -141,7 +147,6 @@ def expand_refs(block, blocks):
                     continue
 
                 new_contents += [prefix + ref_line + suffix]
-            new_contents += b.contents
 
     block.contents = new_contents
 
