@@ -40,9 +40,10 @@ def main():
         if block.export_to == None:
             continue
         expand_refs(block, blocks)
-        print('=====')
-        for line in block.contents:
-            print(line)
+
+        with open(block.export_to, 'w') as file:
+            for line in block.contents:
+                file.write(line + '\n')
 
 
 class Block:

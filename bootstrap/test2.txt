@@ -1,0 +1,12 @@
+This block is tangled to `test2.txt`
+
+prefix: This block is tangled to `test1.txt`
+prefix: This block named `test block 1` is appended to the end of test1.txt
+prefix: This is a block that is from a different file
+This block is tangled to `test1.txt`
+This block named `test block 1` is appended to the end of test1.txt
+This is a block that is from a different file
+This block named `test block 1` is appended to the end of test1.txt :suffix
+This block named `test block 1` is appended to the end of test1.txt
+This is a block that is from a different file
+This is a block that is from a different file
