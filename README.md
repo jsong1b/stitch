@@ -1,2 +1,3 @@
-# stitch
+# Stitch
+
 A tool for literate programming.

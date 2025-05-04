@@ -11,7 +11,7 @@ def main():
     for arg in sys.argv[1:]:
         try:
             with open(arg) as file:
-                json_input += [json.load(file)]
+                json_input += json.load(file)["blocks"]
         except Exception as e:
             print(
                 f"\033[33mStitch: Error reading file \"{arg}\" as JSON: {str(e)}",
@@ -21,7 +21,7 @@ def main():
     if not sys.stdin.isatty():
         stdin_lines = "".join(sys.stdin)
         try:
-            json_input += [json.loads(stdin_lines)]
+            json_input += json.loads(stdin_lines)["blocks"]
         except Exception as e:
             print(
                 f"\033[33mStitch: Error reading stdin as JSON: {str(e)}",

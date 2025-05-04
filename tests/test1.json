@@ -1,0 +1,10 @@
+{
+    "blocks": [
+        {
+            "export": "/tmp/test1.txt",
+            "lines": [
+                "Hello, world!"
+            ]
+        }
+    ]
+}
