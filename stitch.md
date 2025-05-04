@@ -84,11 +84,8 @@ find blocks / settings / metadata.
 
 `+Main Function`:
 ```python
-json_input = []
+json_blocks = []
 ```
-
-To convert the JSON into a dictionary for Python, we need to import the `json`
-module.
 
 `+Imports`:
 ```python
@@ -106,7 +103,7 @@ check_only_for_files = False
 for arg in sys.argv[1:]:
     try:
         with open(arg) as file:
-            json_input += json.load(file)["blocks"]
+            json_blocks += json.load(file)["blocks"]
     except Exception as e:
         print(
             f"\033[33mStitch: Error reading file \"{arg}\" as JSON: {str(e)}",
@@ -125,7 +122,7 @@ program to this.
 if not sys.stdin.isatty():
     stdin_lines = "".join(sys.stdin)
     try:
-        json_input += json.loads(stdin_lines)["blocks"]
+        json_blocks += json.loads(stdin_lines)["blocks"]
     except Exception as e:
         print(
             f"\033[33mStitch: Error reading stdin as JSON: {str(e)}",
@@ -134,7 +131,31 @@ if not sys.stdin.isatty():
         print("Stitch: Skipping stdin...\033[0m", file = sys.stderr)
 ```
 
-## Appending Blocks
+### Validating the JSON
+
+All of the JSON blocks should have the `lines` key, and a warning should be
+given to the user if otherwise. Additionaly, there should be at least 1 valid
+block provided to `Stitch`, otherwise the program should error to notify the
+user.
+
+`+Main Function`:
+```python
+tmp_json_blocks = []
+for block in json_blocks:
+    if "lines" not in block:
+        print(
+            f"\033[33mStitch: Block {block} has no key \"lines\"",
+            file = sys.stderr
+        )
+        print("Skipping block...\033[0m")
+        continue
+    tmp_json_blocks += [block]
+
+json_blocks = tmp_json_blocks
+if len(json_blocks) < 1:
+    print(f"\033[31mStitch: No valid blocks found\033[0m", file = sys.stderr)
+    sys.exit(1)
+```
 
 ---
 
