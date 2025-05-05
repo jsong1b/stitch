@@ -1,9 +1,25 @@
 {
     "blocks": [
         {
+            "from": "manual",
             "export": "/tmp/test1.txt",
             "lines": [
                 "Hello, world!"
+            ]
+        },
+        {
+            "from": "manual",
+            "export": "/tmp/test2.txt",
+            "lines": [
+                "Hello, world!",
+                "This block will be appended to."
+            ]
+        },
+        {
+            "append": "/tmp/test2.txt",
+            "from": "manual",
+            "lines": [
+                "This is a line that is appended to `/tmp/test2.txt`"
             ]
         }
     ]

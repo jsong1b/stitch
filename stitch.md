@@ -49,16 +49,18 @@ Here is the most basic block that would produce a result:
 `+Test JSON Blocks`:
 ```json
 {
+    "from": "manual",
     "export": "/tmp/test1.txt",
     "lines": [
         "Hello, world!"
     ]
-}
+},
 ```
 
 The `export` key tells `Stitch` the file to write `lines` to. The path of the
 file in `export` should be some absolute path, determined by the frontend based
-on the source document.
+on the source document. The `from` key tells `Stitch` where a block comes from,
+which is necessary when determining how to string blocks together.
 
 In this case, this will write to the file `/tmp/test1.txt`, putting in the
 contents:
@@ -157,6 +159,117 @@ if len(json_blocks) < 1:
     sys.exit(1)
 ```
 
+## Appending Blocks
+
+Blocks can be appended to each other, which is useful if you want to make a
+complete source file without having to put everything in one big source code
+block.
+
+`+Test JSON Blocks`:
+```json
+{
+    "from": "manual",
+    "export": "/tmp/test2.txt",
+    "lines": [
+        "Hello, world!",
+        "This block will be appended to."
+    ]
+},
+{
+    "append": "/tmp/test2.txt",
+    "from": "manual",
+    "lines": [
+        "This is a line that is appended to `/tmp/test2.txt`"
+    ]
+}
+```
+
+This will output to `/tmp/test2.txt`:
+
+```txt
+Hello, world!
+This block will be appended to.
+This is a line that is appended to `tmp/test2.txt`
+```
+
+The value of the `append` key must either be the `name` or `export` key of
+another block, which can be followed by a `@{from}` to specify the `from` key
+of the block. If no such specification is made, it is assumed that the block
+comes from the same origin as the appended block.
+
+### Append Function
+
+`+Functions`:
+```python
+def append_block(block, blocks):
+    <<<Append Function>>>
+
+    return None
+```
+
+`+Append Function`:
+```python
+if "append" not in block:
+    return "Append key not found"
+```
+
+These variables will be useful later when comparing the blocks in `blocks` to
+check what we need to append to.
+
+`+Append Function`:
+```python
+append_name = block["append"]
+append_from = block["from"]
+if len(block["append"].split("@")) == 2:
+    (append_name, append_from) = block["append"].split("@")
+```
+
+There is most likely a block in `blocks` that matches the value in `append`.
+
+`+Append Function`:
+```python
+block_found = False
+for b in blocks:
+    if append_from != b["from"]:
+        continue
+
+    b_name = ""
+    if "name" in b:
+        b_name = b["name"]
+    elif "export" in b:
+        b_name = b["export"]
+
+    if append_name == b_name:
+        b["lines"] += block["lines"]
+        block_found = True
+        return None
+```
+
+If there the block to append to is not found in `blocks`, a new block should be
+appended to the list.
+
+`+Append Function`:
+```python
+blocks += [{
+    "name": append_name,
+    "from": append_from,
+    "lines": block["lines"]
+}]
+```
+
+### Calling the Function
+
+`+Main Function`:
+```python
+print(json_blocks)
+
+for block in json_blocks:
+    if "append" in block:
+        err = append_block(block, json_blocks)
+
+print(json_blocks)
+```
+
 ---
 
 ## TODO: Implement Creating New Blocks When Appending to Non-existant Ones
@@ -175,4 +288,8 @@ if len(json_blocks) < 1:
 
 `Test JSON Blocks`:
 ```json
+```
+
+`Append Function`:
+```python
 ```
