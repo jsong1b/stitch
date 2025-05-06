@@ -53,10 +53,24 @@ def main():
                     file = sys.stderr
                 )
     for block in json_blocks:
-        print("======")
         if "export" in block:
             (err, lines) = expand_refs(block, json_blocks)
-            print(lines)
+            if err != None:
+                print(
+                    f"\033[33mStitch: Error expanding references in block: {block}: {err}\033[0m",
+                    file = sys.stderr
+                )
+
+            try:
+                with open(block["export"], 'w') as file:
+                    for line in lines:
+                        file.write(line + '\n')
+            except Exception as e:
+                print(
+                    f"\033[33mStitch: Error writing to file {block["export"]}: {e}",
+                    file = sys.stderr
+                )
+                print(f"Skipping {block["export"]}...\033[0m", file = sys.stderr)
 
 
 def append_block(block, blocks):
