@@ -3,6 +3,7 @@
 
 import sys
 import json
+import re
 
 
 def main():
@@ -43,13 +44,19 @@ def main():
     if len(json_blocks) < 1:
         print(f"\033[31mStitch: No valid blocks found\033[0m", file = sys.stderr)
         sys.exit(1)
-    print(json_blocks)
-
     for block in json_blocks:
         if "append" in block:
             err = append_block(block, json_blocks)
-
-    print(json_blocks)
+            if err != None:
+                print(
+                    f"\033[;33mStitch: error appending block: {err}\033[;0m",
+                    file = sys.stderr
+                )
+    for block in json_blocks:
+        print("======")
+        if "export" in block:
+            (err, lines) = expand_refs(block, json_blocks)
+            print(lines)
 
 
 def append_block(block, blocks):
@@ -81,6 +88,55 @@ def append_block(block, blocks):
     }]
 
     return None
+def expand_refs(block, blocks, visited_blocks = []):
+    for b in visited_blocks:
+        if (("name" in b and "name" in block and block["name"] == b["name"])
+            or ("export" in b and "export" in block
+                and block["export"] == b["export"])
+            and block["from"] == b["from"]):
+            return ("Self-referential expansion", None)
+
+    contents = []
+    for line in block["lines"]:
+        if not re.match("^.*<<<.+>>>.*$", line):
+            contents += [line]
+            continue
+
+        if len(re.findall("<<<.+>>>", line)) != 1:
+            return ("", None)
+
+        ref_name = re.findall("<<<.+>>>", line)[0][3:-3]
+        ref_from = block["from"]
+        if "@" in ref_name:
+            (ref_name, ref_from) = ref_name.split("@")
+        (prefix, suffix) = ("", "")
+        if len(line.split("<<<")) == 2:
+            prefix = line.split("<<<")[0]
+        if len(line.split(">>>")) == 2:
+            suffix = line.split(">>>")[1]
+        reference_found = True
+        for b in blocks:
+            if ("name" not in b
+                or ref_name != b["name"]
+                or ref_from != b["from"]):
+                continue
+
+            (err, b["lines"]) = expand_refs(b, blocks, visited_blocks + [block])
+            if err != None:
+                if err == "Self-referential expansion":
+                    return (err, block["lines"])
+                else:
+                    return (err, None)
+            for l in b["lines"]:
+                if l == "":
+                    contents += [""]
+                else:
+                    contents += [prefix + l + suffix]
+        if reference_found == False:
+            contents += [line]
+            continue
+
+    return (None, contents)
 
 
 if __name__ == "__main__":

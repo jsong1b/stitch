@@ -136,6 +136,7 @@ def expand_refs(block, blocks):
         if re.match(r'^.+@.+$', ref_name):
             (ref_name, ref_file) = ref_name.split('@')
 
+        block_found = False
         for b in blocks:
             if ref_name != b.name or ref_file != b.file:
                 continue
@@ -147,6 +148,11 @@ def expand_refs(block, blocks):
                     continue
 
                 new_contents += [prefix + ref_line + suffix]
+            block_found = True
+            break
+
+        if block_found == False:
+            new_contents += [line]
 
     block.contents = new_contents
 

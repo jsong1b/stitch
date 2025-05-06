@@ -181,7 +181,7 @@ block.
     "lines": [
         "This is a line that is appended to `/tmp/test2.txt`"
     ]
-}
+},
 ```
 
 This will output to `/tmp/test2.txt`:
@@ -202,15 +202,11 @@ comes from the same origin as the appended block.
 `+Functions`:
 ```python
 def append_block(block, blocks):
+    if "append" not in block:
+        return "Append key not found"
     <<<Append Function>>>
 
     return None
-```
-
-`+Append Function`:
-```python
-if "append" not in block:
-    return "Append key not found"
 ```
 
 These variables will be useful later when comparing the blocks in `blocks` to
@@ -261,13 +257,212 @@ blocks += [{
 
 `+Main Function`:
 ```python
-print(json_blocks)
-
 for block in json_blocks:
     if "append" in block:
         err = append_block(block, json_blocks)
+        if err != None:
+            print(
+                f"\033[;33mStitch: error appending block: {err}\033[;0m",
+                file = sys.stderr
+            )
+```
 
-print(json_blocks)
+## Expanding References
+
+Blocks can include references to other blocks using `<<<>>>` delimiters. Inside
+should be the name of the block and optionally `@{from}` to specify where the
+block comes from. If no such distinction is made, the referenced block is
+assumed to be from the same file as the block referencing it.
+
+`+Test JSON Blocks`:
+```json
+{
+    "export": "/tmp/test3.txt",
+    "from": "manual",
+    "lines": [
+        "This is a block that references another block.",
+        "<<<Test Named Block 1>>>"
+    ]
+},
+{
+    "name": "Test Named Block 1",
+    "from": "manual",
+    "lines": [
+        "This will be appended to blocks that reference `Test Named Block 1`"
+    ]
+},
+```
+
+This would result in a file `/tmp/test3.txt` with the output:
+
+```txt
+This is a block that references another block.
+This will be appended to blocks that reference `Test Named Block 1`
+```
+
+### Expand Function
+
+`+Functions`:
+```python
+def expand_refs(block, blocks, visited_blocks = []):
+    <<<Block Already Checked>>>
+
+    contents = []
+    for line in block["lines"]:
+        <<<Expand Loop>>>
+
+    return (None, contents)
+```
+
+#### Check for Reference
+
+This is the part of `Stitch` that requries regex, so we have to import the
+`re` module. Regex will be used to check how
+
+`+Imports`:
+```python
+import re
+```
+
+We need regex to find lines that include the pattern `<<<.+>>>`, which is a
+line containing a reference.
+
+`+Expand Loop`:
+```python
+if not re.match("^.*<<<.+>>>.*$", line):
+    contents += [line]
+    continue
+
+if len(re.findall("<<<.+>>>", line)) != 1:
+    return ("", None)
+
+ref_name = re.findall("<<<.+>>>", line)[0][3:-3]
+ref_from = block["from"]
+if "@" in ref_name:
+    (ref_name, ref_from) = ref_name.split("@")
+```
+
+#### Prefixes and Suffixes
+
+The text before and after a reference should be copied to every line inside the
+reference, mainly to keep indentation levels and comments. For example:
+
+`+Test JSON Blocks`:
+```json
+{
+    "export": "/tmp/test4.txt",
+    "from": "manual",
+    "lines": [
+        "prefix: <<<Test Named Block 2>>>",
+        "<<<Test Named Block 2>>> :suffix",
+        "prefix: <<<Test Named Block 2>>> :suffix"
+    ]
+},
+{
+    "name": "Test Named Block 2",
+    "from": "manual",
+    "lines": [
+        "This block will have prefixes and suffixes prepended / appended."
+    ]
+}
+```
+
+Will output:
+
+```txt
+prefix: This block will have prefixes and suffixes prepended / appended.
+This block will have prefixes and suffixes prepended / appended. :suffix
+prefix: This block will have prefixes and suffixes prepended / appended. :suffix
+```
+
+If there are no prefix or suffix, none will be prepended / appended.
+
+`+Expand Loop`:
+```python
+(prefix, suffix) = ("", "")
+if len(line.split("<<<")) == 2:
+    prefix = line.split("<<<")[0]
+if len(line.split(">>>")) == 2:
+    suffix = line.split(">>>")[1]
+```
+
+#### Expand the Reference
+
+The referenced block is most likely in `blocks`.
+
+`+Expand Loop`:
+```python
+reference_found = True
+for b in blocks:
+    if ("name" not in b
+        or ref_name != b["name"]
+        or ref_from != b["from"]):
+        continue
+
+    <<<Reference Found>>>
+```
+
+The contents should be expanded recursively so that *all* references are
+expanded. Otherwise, if a block is referenced but also contains references to
+another block, that reference will not be expanded.
+
+`+Reference Found`:
+```python
+(err, b["lines"]) = expand_refs(b, blocks, visited_blocks + [block])
+if err != None:
+    if err == "Self-referential expansion":
+        return (err, block["lines"])
+    else:
+        return (err, None)
+```
+
+There is a chance this creates an infinite recursive loop, in which case the
+function should abort and simply return the original content with an error.
+
+`Block Already Checked`:
+```python
+for b in visited_blocks:
+    if (("name" in b and "name" in block and block["name"] == b["name"])
+        or ("export" in b and "export" in block
+            and block["export"] == b["export"])
+        and block["from"] == b["from"]):
+        return ("Self-referential expansion", None)
+```
+
+If the referenced block is not found, the line should just be left as is. This
+is in case there is some source code that contains `<<<>>>` but is not
+referring to another block.
+
+`+Expand Loop`:
+```python
+if reference_found == False:
+    contents += [line]
+    continue
+```
+
+When 
+
+`+Reference Found`:
+```python
+for l in b["lines"]:
+    if l == "":
+        contents += [""]
+    else:
+        contents += [prefix + l + suffix]
+```
+
+## Writing to Files
+
+Only the files that are exported need to have their references expanded
+initialially,
+
+`+Main Function`:
+```python
+for block in json_blocks:
+    print("======")
+    if "export" in block:
+        (err, lines) = expand_refs(block, json_blocks)
+        print(lines)
 ```
 
 ---
@@ -291,5 +486,13 @@ print(json_blocks)
 ```
 
 `Append Function`:
+```python
+```
+
+`Expand Loop`:
+```python
+```
+
+`Reference Found`:
 ```python
 ```
