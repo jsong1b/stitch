@@ -28,7 +28,7 @@ Frontend programs to `Stitch` extract blocks from documents and place them in
 JSON representation, either to be passed in through `stdin` or as a command
 line argument.
 
-[JSON Test 1](tests/test1.json):
+[JSON Test](tests/test2.json):
 ```json
 {
     "blocks": [

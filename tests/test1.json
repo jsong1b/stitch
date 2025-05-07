@@ -1,57 +1,18 @@
 {
     "blocks": [
         {
-            "from": "manual",
-            "export": "/tmp/test1.txt",
             "lines": [
-                "Hello, world!"
-            ]
+                "This line will be written to /tmp/absolute_export_test.txt."
+            ],
+            "from": "./some_document.md",
+            "export": "/tmp/absolute_export_test.txt"
         },
         {
-            "from": "manual",
-            "export": "/tmp/test2.txt",
             "lines": [
-                "Hello, world!",
-                "This block will be appended to."
-            ]
-        },
-        {
-            "append": "/tmp/test2.txt",
-            "from": "manual",
-            "lines": [
-                "This is a line that is appended to `/tmp/test2.txt`"
-            ]
-        },
-        {
-            "export": "/tmp/test3.txt",
-            "from": "manual",
-            "lines": [
-                "This is a block that references another block.",
-                "<<<Test Named Block 1>>>"
-            ]
-        },
-        {
-            "name": "Test Named Block 1",
-            "from": "manual",
-            "lines": [
-                "This will be appended to blocks that reference `Test Named Block 1`"
-            ]
-        },
-        {
-            "export": "/tmp/test4.txt",
-            "from": "manual",
-            "lines": [
-                "prefix: <<<Test Named Block 2>>>",
-                "<<<Test Named Block 2>>> :suffix",
-                "prefix: <<<Test Named Block 2>>> :suffix"
-            ]
-        },
-        {
-            "name": "Test Named Block 2",
-            "from": "manual",
-            "lines": [
-                "This block will have prefixes and suffixes prepended / appended."
-            ]
+                "This line will be written to ./relative_export_test.txt."
+            ],
+            "from": "./some_document.md",
+            "export": "./relative_export_test.txt"
         }
     ]
 }
