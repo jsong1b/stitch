@@ -44,7 +44,9 @@ In the case of an absolute path, `Stitch` will simply try to write to that
 file. In the case of a relative path, `Stitch` will base the relative path
 based on the directory of the file specified in the value of the `from` key.
 Whether or not the path is absolute or relative is dependent on whatever
-program generates the JSON or what the user specifies.
+program generates the JSON or what the user specifies. Additionally, if no
+other name is specified for a block, the value of `export` becomes the value
+of `name`.
 
 Here is an example using an absolute path:
 
@@ -55,7 +57,8 @@ Here is an example using an absolute path:
         "This line will be written to /tmp/absolute_export_test.txt."
     ],
     "from": "./some_document.md",
-    "export": "/tmp/absolute_export_test.txt"
+    "export": "/tmp/absolute_export_test.txt",
+    "name": "/tmp/absolute_export_test.txt"
 },
 ```
 
@@ -75,7 +78,8 @@ And here is an example using a relative path:
         "This line will be written to ./relative_export_test.txt."
     ],
     "from": "./some_document.md",
-    "export": "./relative_export_test.txt"
+    "export": "./relative_export_test.txt",
+    "name": "./relative_export_test.txt"
 }
 ```
 
@@ -87,6 +91,59 @@ This line will be written to ./relative_export_test.txt.
 ```
 
 This will be placed in the same directory as `./some_document.md`, so `.`.
+
+## Appending Blocks to Each Other (`append` Key)
+
+The `append` key tells `Stitch` what other block to add the contents of a block
+to. It's value is the value of another block's `name` or `export` key.
+
+`+Blocks`:
+```json
+{
+    "lines": [
+        "This will export to ./append_test_same_file.txt and be appended to."
+    ],
+    "from": "./some_document.md",
+    "export": "./append_test_same_file.txt",
+    "name": "./append_test_same_file.txt"
+},
+{
+    "lines": [
+        "This is what is appended to ./append_test_same_file.txt."
+    ],
+    "from": "./some_document.md",
+    "append": "./append_test_same_file.txt"
+},
+```
+
+Optionally, the `append_to_from` key can be provided if a block to be appended
+and the block it needs to be appended to are from different files.
+
+`+Blocks`:
+```json
+{
+    "lines": [
+        "This will export to ./append_test_different_file.txt."
+        "The block appended to this is from another file."
+    ],
+    "from": "./some_document.md",
+    "export": "./append_test_different_file.txt",
+    "name": "./append_test_different_file.txt"
+},
+{
+    "lines": [
+        "This is what is appended to ./append_test_different_file.txt."
+        "The block this is appended to is from another file."
+    ],
+    "from": "./some_other_document.md",
+    "append": "./append_test_different_file.txt",
+    "append_to_from": "./some_document.md"
+},
+```
+
+Notice how the second block's `from` key is `./some_other_document.md`, not
+`./some_document.md` like the first block. This is why the `append_to_from` key
+is needed to append the second block to the first block.
 
 ## TODO: Implement Creating New Blocks When Appending to Non-existant Ones
 

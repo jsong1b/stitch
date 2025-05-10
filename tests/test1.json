@@ -5,14 +5,49 @@
                 "This line will be written to /tmp/absolute_export_test.txt."
             ],
             "from": "./some_document.md",
-            "export": "/tmp/absolute_export_test.txt"
+            "export": "/tmp/absolute_export_test.txt",
+            "name": "/tmp/absolute_export_test.txt"
         },
         {
             "lines": [
                 "This line will be written to ./relative_export_test.txt."
             ],
             "from": "./some_document.md",
-            "export": "./relative_export_test.txt"
+            "export": "./relative_export_test.txt",
+            "name": "./relative_export_test.txt"
         }
+        {
+            "lines": [
+                "This will export to ./append_test_same_file.txt and be appended to."
+            ],
+            "from": "./some_document.md",
+            "export": "./append_test_same_file.txt",
+            "name": "./append_test_same_file.txt"
+        },
+        {
+            "lines": [
+                "This is what is appended to ./append_test_same_file.txt."
+            ],
+            "from": "./some_document.md",
+            "append": "./append_test_same_file.txt"
+        },
+        {
+            "lines": [
+                "This will export to ./append_test_different_file.txt."
+                "The block appended to this is from another file."
+            ],
+            "from": "./some_document.md",
+            "export": "./append_test_different_file.txt",
+            "name": "./append_test_different_file.txt"
+        },
+        {
+            "lines": [
+                "This is what is appended to ./append_test_different_file.txt."
+                "The block this is appended to is from another file."
+            ],
+            "from": "./some_other_document.md",
+            "append": "./append_test_different_file.txt",
+            "append_to_from": "./some_document.md"
+        },
     ]
 }
