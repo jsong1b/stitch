@@ -1,30 +1,17 @@
 {
     "blocks": [
         {
-            "from": "manual",
+            "from": "./test2.json",
             "export": "/tmp/test1.txt",
+            "name": "/tmp/test1.txt",
             "lines": [
                 "Hello, world!"
             ]
         },
         {
-            "from": "manual",
-            "export": "/tmp/test2.txt",
-            "lines": [
-                "Hello, world!",
-                "This block will be appended to."
-            ]
-        },
-        {
-            "append": "/tmp/test2.txt",
-            "from": "manual",
-            "lines": [
-                "This is a line that is appended to `/tmp/test2.txt`"
-            ]
-        },
-        {
             "export": "/tmp/test3.txt",
-            "from": "manual",
+            "name": "/tmp/test3.txt",
+            "from": "./test2.json",
             "lines": [
                 "This is a block that references another block.",
                 "<<<Test Named Block 1>>>"
@@ -32,14 +19,15 @@
         },
         {
             "name": "Test Named Block 1",
-            "from": "manual",
+            "from": "./test2.json",
             "lines": [
                 "This will be appended to blocks that reference `Test Named Block 1`"
             ]
         },
         {
             "export": "/tmp/test4.txt",
-            "from": "manual",
+            "name": "/tmp/test4.txt",
+            "from": "./test2.json",
             "lines": [
                 "prefix: <<<Test Named Block 2>>>",
                 "<<<Test Named Block 2>>> :suffix",
@@ -48,7 +36,7 @@
         },
         {
             "name": "Test Named Block 2",
-            "from": "manual",
+            "from": "./test2.json",
             "lines": [
                 "This block will have prefixes and suffixes prepended / appended."
             ]
