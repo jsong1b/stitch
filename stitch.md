@@ -49,8 +49,9 @@ Here is the most basic block that would produce a result:
 `+Test JSON Blocks`:
 ```json
 {
-    "from": "manual",
+    "from": "./test2.json",
     "export": "/tmp/test1.txt",
+    "name": "/tmp/test1.txt",
     "lines": [
         "Hello, world!"
     ]
@@ -165,37 +166,9 @@ Blocks can be appended to each other, which is useful if you want to make a
 complete source file without having to put everything in one big source code
 block.
 
-`+Test JSON Blocks`:
-```json
-{
-    "from": "manual",
-    "export": "/tmp/test2.txt",
-    "lines": [
-        "Hello, world!",
-        "This block will be appended to."
-    ]
-},
-{
-    "append": "/tmp/test2.txt",
-    "from": "manual",
-    "lines": [
-        "This is a line that is appended to `/tmp/test2.txt`"
-    ]
-},
-```
-
-This will output to `/tmp/test2.txt`:
-
-```txt
-Hello, world!
-This block will be appended to.
-This is a line that is appended to `tmp/test2.txt`
-```
-
-The value of the `append` key must either be the `name` or `export` key of
-another block, which can be followed by a `@{from}` to specify the `from` key
-of the block. If no such specification is made, it is assumed that the block
-comes from the same origin as the appended block.
+The value of the `append` key must be the value of the `name` key of another
+block. Additionally, the `append_to_from` key can be specified in order to
+tell `Stitch` that the block to append to is from a different file.
 
 ### Append Function
 
@@ -216,8 +189,8 @@ check what we need to append to.
 ```python
 append_name = block["append"]
 append_from = block["from"]
-if len(block["append"].split("@")) == 2:
-    (append_name, append_from) = block["append"].split("@")
+if "append_to_from" in block:
+    append_from = block["append_to_from"]
 ```
 
 There is most likely a block in `blocks` that matches the value in `append`.
@@ -278,7 +251,8 @@ assumed to be from the same file as the block referencing it.
 ```json
 {
     "export": "/tmp/test3.txt",
-    "from": "manual",
+    "name": "/tmp/test3.txt",
+    "from": "./test2.json",
     "lines": [
         "This is a block that references another block.",
         "<<<Test Named Block 1>>>"
@@ -286,7 +260,7 @@ assumed to be from the same file as the block referencing it.
 },
 {
     "name": "Test Named Block 1",
-    "from": "manual",
+    "from": "./test2.json",
     "lines": [
         "This will be appended to blocks that reference `Test Named Block 1`"
     ]
@@ -351,7 +325,8 @@ reference, mainly to keep indentation levels and comments. For example:
 ```json
 {
     "export": "/tmp/test4.txt",
-    "from": "manual",
+    "name": "/tmp/test4.txt",
+    "from": "./test2.json",
     "lines": [
         "prefix: <<<Test Named Block 2>>>",
         "<<<Test Named Block 2>>> :suffix",
@@ -360,7 +335,7 @@ reference, mainly to keep indentation levels and comments. For example:
 },
 {
     "name": "Test Named Block 2",
-    "from": "manual",
+    "from": "./test2.json",
     "lines": [
         "This block will have prefixes and suffixes prepended / appended."
     ]

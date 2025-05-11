@@ -78,8 +78,8 @@ def append_block(block, blocks):
         return "Append key not found"
     append_name = block["append"]
     append_from = block["from"]
-    if len(block["append"].split("@")) == 2:
-        (append_name, append_from) = block["append"].split("@")
+    if "append_to_from" in block:
+        append_from = block["append_to_from"]
     block_found = False
     for b in blocks:
         if append_from != b["from"]:
