@@ -21,8 +21,8 @@ blocks.
 
 A block simply contains some keys specifying how `Stitch` should use the block.
 
-The required keys are `lines`, `from`, and either `export` and `name` or
-`append`.
+The required keys are `lines`, `from`, and either `export` with `name`, just
+`name` or `append`.
 
 The `lines` key should have the value of a list of strings that are the lines
 of the block.
@@ -33,7 +33,7 @@ puts blocks together or exports them. This can be either a relative or absolute
 path. The format of this key is dependent on the frontend that generates the
 JSON.
 
-The other 3 keys need a bit more of an explanation.
+The other keys need a bit more of an explanation.
 
 ## Exporting Blocks To Source Code (`export` Key)
 
@@ -43,9 +43,8 @@ In the case of an absolute path, `Stitch` will simply try to write to that
 file. In the case of a relative path, `Stitch` will base the relative path
 based on the directory of the file specified in the value of the `from` key.
 Whether or not the path is absolute or relative is dependent on whatever
-program generates the JSON or what the user specifies. Additionally, if no
-other name is specified for a block, the value of `export` becomes the value
-of `name`.
+program generates the JSON or what the user specifies. A `name` key is also
+required when exporting.
 
 Here is an example using an absolute path:
 
@@ -275,6 +274,127 @@ This will export to ./reference_test_external.txt.
 This block was referened by ./reference_test_external.txt.
 This block is from another file.
 ```
+
+## Other Notes
+
+Appends are performed first before reference expansion, and if text is appended
+to a named block that is referenced, that text is included in the reference
+expansion.
+
+`+Blocks`:
+```json
+{
+    "lines": [
+        "This file references a block that is appended to.",
+        "<<<Appended Reference>>>"
+    ],
+    "from": "./some_document.md",
+    "export": "./append_then_expand.txt",
+    "name": "./append_then_expand.txt"
+},
+{
+    "lines": [
+        "This block is referenced but is also appended to."
+    ],
+    "from": "./some_document.md",
+    "name": "Appended Reference"
+},
+{
+    "lines": [
+        "This line is appended to a block that is referenced."
+    ],
+    "from": "./some_document.md",
+    "append": "Appended Reference"
+},
+```
+
+This will produce:
+
+`./append_then_expand.txt`:
+```txt
+This file references a block that is appended to.
+This block is referenced but is also appended to.
+This line is appended to a block that is referenced.
+```
+
+When appending to a non-existant block, a new block will be created with the
+`name` and `from` key values provided by `append` and `append_to_from` keys.
+
+`+Blocks`:
+```json
+{
+    "lines": [
+        "This file references non-existant blocks that are appended to.",
+        "<<<Non-Existant Block>>>",
+        "<<<Non-Existant External Block@./non_existant_document.md>>>"
+    ],
+    "from": "./some_document.md",
+    "export": "./non_existant_appends.txt"
+},
+{
+    "lines": [
+        "This is appended to the block named Non-Existant Block."
+    ],
+    "from": "./some_document.md",
+    "append": "Non-Existant Block"
+},
+{
+    "lines": [
+        "This is appended to the block named Non-Existant External Block.",
+        "The file also doesn't exist."
+    ],
+    "from": "./some_document.md",
+    "append": "Non-Existant External Block",
+    "append_to_from": "./non_existant_document.md"
+}
+```
+
+Will output:
+
+`./non_existant_appends.txt`:
+```txt
+This file references non-existant blocks that are appended to.
+This is appended to the block named Non-Existant Block.
+This is appended to the block named Non-Existant External Block.
+The file also doesn't exist.
+```
+
+Self-referencing blocks are invalid because they create infinite loops.
+Self-referencing blocks include a series of blocks that create infinite loops,
+even if the block does not directly referencing itself.
+
+For example:
+
+```json
+{
+    "lines": [
+        "This is an invalid self-referencing block.",
+        "<<<Self-Referencing Block>>>"
+    ],
+    "from": "./invalid_document.md",
+    "name": "Self-Referencing Block"
+},
+
+
+{
+    "lines": [
+        "This is a block creating an infinite loop..",
+        "<<<Self-Referencing Block 2>>>"
+    ],
+    "from": "./invalid_document.md",
+    "name": "Self-Referencing Block 1"
+},
+{
+    "lines": [
+        "This is a block creating an infinite loop..",
+        "<<<Self-Referencing Block 1>>>"
+    ],
+    "from": "./invalid_document.md",
+    "name": "Self-Referencing Block 2"
+}
+```
+
+Are all invalid blocks and will be invalidated by `Stitch`.
 
 ## TODO: Implement Creating New Blocks When Appending to Non-existant Ones
 

@@ -102,5 +102,53 @@
            "from": "./some_other_document.md",
            "name": "External Reference Block"
         },
+        {
+            "lines": [
+                "This file references a block that is appended to.",
+                "<<<Appended Reference>>>"
+            ],
+            "from": "./some_document.md",
+            "export": "./append_then_expand.txt",
+            "name": "./append_then_expand.txt"
+        },
+        {
+            "lines": [
+                "This block is referenced but is also appended to."
+            ],
+            "from": "./some_document.md",
+            "name": "Appended Reference"
+        },
+        {
+            "lines": [
+                "This line is appended to a block that is referenced."
+            ],
+            "from": "./some_document.md",
+            "append": "Appended Reference"
+        },
+        {
+            "lines": [
+                "This file references non-existant blocks that are appended to.",
+                "<<<Non-Existant Block>>>",
+                "<<<Non-Existant External Block@./non_existant_document.md>>>"
+            ],
+            "from": "./some_document.md",
+            "export": "./non_existant_appends.txt"
+        },
+        {
+            "lines": [
+                "This is appended to the block named Non-Existant Block."
+            ],
+            "from": "./some_document.md",
+            "append": "Non-Existant Block"
+        },
+        {
+            "lines": [
+                "This is appended to the block named Non-Existant External Block.",
+                "The file also doesn't exist."
+            ],
+            "from": "./some_document.md",
+            "append": "Non-Existant External Block",
+            "append_to_from": "./non_existant_document.md"
+        }
     ]
 }
