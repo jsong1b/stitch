@@ -28,15 +28,6 @@ Frontend programs to `Stitch` extract blocks from documents and place them in
 JSON representation, either to be passed in through `stdin` or as a command
 line argument.
 
-[JSON Test](tests/test2.json):
-```json
-{
-    "blocks": [
-        <<<Test JSON Blocks>>>
-    ]
-}
-```
-
 The reason why a JSON representation is passed into `Stitch` is because there
 are many markup formats that a document could be written in, so the only thing
 that should be needed to write literate documents would be `Stitch` to handle
@@ -44,33 +35,13 @@ the backend and another program to translate the document into JSON.
 
 ### The Structure of a Block
 
-Here is the most basic block that would produce a result:
-
-`+Test JSON Blocks`:
-```json
-{
-    "from": "./test2.json",
-    "export": "/tmp/test1.txt",
-    "name": "/tmp/test1.txt",
-    "lines": [
-        "Hello, world!"
-    ]
-},
-```
-
 The `export` key tells `Stitch` the file to write `lines` to. The path of the
 file in `export` should be some absolute path, determined by the frontend based
 on the source document. The `from` key tells `Stitch` where a block comes from,
 which is necessary when determining how to string blocks together.
 
-In this case, this will write to the file `/tmp/test1.txt`, putting in the
-contents:
-
-```txt
-Hello, world!
-```
-
 More parts of the JSON representaion will be explained later in this document.
+More information about the JSON IR is located in [it's spec](./json_spec.md).
 
 ## Parse CLI Arguments & `stdin`
 
@@ -247,33 +218,6 @@ should be the name of the block and optionally `@{from}` to specify where the
 block comes from. If no such distinction is made, the referenced block is
 assumed to be from the same file as the block referencing it.
 
-`+Test JSON Blocks`:
-```json
-{
-    "export": "/tmp/test3.txt",
-    "name": "/tmp/test3.txt",
-    "from": "./test2.json",
-    "lines": [
-        "This is a block that references another block.",
-        "<<<Test Named Block 1>>>"
-    ]
-},
-{
-    "name": "Test Named Block 1",
-    "from": "./test2.json",
-    "lines": [
-        "This will be appended to blocks that reference `Test Named Block 1`"
-    ]
-},
-```
-
-This would result in a file `/tmp/test3.txt` with the output:
-
-```txt
-This is a block that references another block.
-This will be appended to blocks that reference `Test Named Block 1`
-```
-
 ### Expand Function
 
 `+Functions`:
@@ -319,38 +263,9 @@ if "@" in ref_name:
 #### Prefixes and Suffixes
 
 The text before and after a reference should be copied to every line inside the
-reference, mainly to keep indentation levels and comments. For example:
+reference, mainly to keep indentation levels and comments.
 
-`+Test JSON Blocks`:
-```json
-{
-    "export": "/tmp/test4.txt",
-    "name": "/tmp/test4.txt",
-    "from": "./test2.json",
-    "lines": [
-        "prefix: <<<Test Named Block 2>>>",
-        "<<<Test Named Block 2>>> :suffix",
-        "prefix: <<<Test Named Block 2>>> :suffix"
-    ]
-},
-{
-    "name": "Test Named Block 2",
-    "from": "./test2.json",
-    "lines": [
-        "This block will have prefixes and suffixes prepended / appended."
-    ]
-}
-```
-
-Will output:
-
-```txt
-prefix: This block will have prefixes and suffixes prepended / appended.
-This block will have prefixes and suffixes prepended / appended. :suffix
-prefix: This block will have prefixes and suffixes prepended / appended. :suffix
-```
-
-If there are no prefix or suffix, none will be prepended / appended.
+If there is no prefix or suffix, it will be prepended or appended.
 
 `+Expand Loop`:
 ```python
@@ -415,7 +330,8 @@ if reference_found == False:
     continue
 ```
 
-When 
+When a line in the expanded reference is empty, it should not the prefix /
+suffix appended to it.
 
 `+Reference Found`:
 ```python

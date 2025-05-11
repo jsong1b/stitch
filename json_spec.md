@@ -10,7 +10,7 @@ data around.
 All the JSON really needs is a key called `blocks` that holds a list of the
 blocks.
 
-[Test JSON File](tests/test1.json):
+[Test JSON File](./test.json):
 ```json
 {
     "blocks": [
@@ -78,7 +78,7 @@ And here is an example using a relative path:
     "from": "./some_document.md",
     "export": "./relative_export_test.txt",
     "name": "./relative_export_test.txt"
-}
+},
 ```
 
 Which would output the following to `./relative_export_test.txt`:
@@ -209,7 +209,7 @@ will be copied to all the lines except empty ones.
         "This will export to ./reference_test_fixes.txt.",
         "prefix: <<<Affixed Reference Block>>>",
         "<<<Affixed Reference Block>>> :suffix",
-        "prefix: <<<Affixed Reference Block>>> :suffix",
+        "prefix: <<<Affixed Reference Block>>> :suffix"
     ],
     "from": "./some_document.md",
     "export": "./reference_test_fixes.txt",
