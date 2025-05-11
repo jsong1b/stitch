@@ -33,7 +33,7 @@
         },
         {
             "lines": [
-                "This will export to ./append_test_different_file.txt."
+                "This will export to ./append_test_different_file.txt.",
                 "The block appended to this is from another file."
             ],
             "from": "./some_document.md",
@@ -42,12 +42,65 @@
         },
         {
             "lines": [
-                "This is what is appended to ./append_test_different_file.txt."
+                "This is what is appended to ./append_test_different_file.txt.",
                 "The block this is appended to is from another file."
             ],
             "from": "./some_other_document.md",
             "append": "./append_test_different_file.txt",
             "append_to_from": "./some_document.md"
+        },
+        {
+            "lines": [
+                "This will export to ./reference_test_basic.txt.",
+                "<<<Basic Reference Block>>>"
+            ],
+            "from": "./some_document.md",
+            "export": "./reference_test_basic.txt",
+            "name": "./reference_test_basic.txt"
+        },
+        {
+            "lines": [
+                "This block was referened by ./reference_test_basic.txt."
+           ],
+           "from": "./some_document.md",
+           "name": "Basic Reference Block"
+        },
+        {
+            "lines": [
+                "This will export to ./reference_test_fixes.txt.",
+                "prefix: <<<Affixed Reference Block>>>",
+                "<<<Affixed Reference Block>>> :suffix",
+                "prefix: <<<Affixed Reference Block>>> :suffix",
+            ],
+            "from": "./some_document.md",
+            "export": "./reference_test_fixes.txt",
+            "name": "./reference_test_fixes.txt"
+        },
+        {
+            "lines": [
+                "This block has prefixes and suffixes.",
+                "",
+                "But not on empty lines."
+           ],
+           "from": "./some_document.md",
+           "name": "Affixed Reference Block"
+        },
+        {
+            "lines": [
+                "This will export to ./reference_test_external.txt.",
+                "<<<External Reference Block@./some_other_document.md>>>"
+            ],
+            "from": "./some_document.md",
+            "export": "./reference_test_external.txt",
+            "name": "./reference_test_external.txt"
+        },
+        {
+            "lines": [
+                "This block was referened by ./reference_test_external.txt.",
+                "This block is from another file."
+           ],
+           "from": "./some_other_document.md",
+           "name": "External Reference Block"
         },
     ]
 }
