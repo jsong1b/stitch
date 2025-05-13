@@ -3,6 +3,7 @@
 
 import shutil
 import sys
+import os
 
 
 def main():
@@ -16,22 +17,44 @@ def main():
     cur_from_type = "auto"
     files = []
 
-    for i, arg in enumerate(sys.argv[1:]):
+    args = iter(sys.argv[1:]) # in order to avoid annoying double continue logic
+
+    for i, arg in enumerate(args):
         if only_check_for_files == False:
             if arg in ["-f", "--from"]:
                 if i >= len(sys.argv[1:]) - 1:
                     print(
-                        f"\033[31mPandoc Stitch Frontend: Warning: \"{arg}\" passed at position {i + 1} with no filetype",
+                        f"\033[33mPandoc Stitch Frontend: Warning: \"{arg}\" passed at position {i + 1} with no filetype",
                         file = sys.stderr
                     )
                     print("Ignoring last argument...\033[0m", file = sys.stderr)
                     continue
 
-                cur_from_type = arg
+                cur_from_type = sys.argv[i + 1]
+                next(args, None) # this avoids annoying double continue logic
                 continue
             if arg == "--":
-                cur_from_type = True
+                only_check_for_files = True
                 continue
+
+        if not (os.path.isfile(arg) and os.access(arg, os.R_OK)):
+            print(
+                f"\033[33mPandoc Stitch Frontend: Warning: File \"{arg}\" does not exist or is not readable",
+                file = sys.stderr
+            )
+            print(
+                f"Skipping file \"{arg}\"...\033[0m",
+                file = sys.stderr
+            )
+            continue
+
+        files += [(cur_from_type, os.path.abspath(arg))]
+    if len(files) <= 0:
+        print(
+            "\033[31mPandoc Stitch Frontend: Error: No valid files passed into script\033[0m",
+            file = sys.stderr
+        )
+        sys.exit(1)
 
 
 
