@@ -166,6 +166,8 @@ for file in files:
         continue
 
     blocks += extract_blocks(file[1], unfiltered_blocks)
+
+print(json.dumps({"blocks": blocks}), file = sys.stdout)
 ```
 
 Blocks need to be extracted recursively in order to properly walk the Pandoc's
@@ -175,7 +177,6 @@ AST.
 ```python
 def extract_blocks(file, pandoc_blocks):
     saved_blocks = []
-    cur_block = {}
     block_metadata = None
 
     for block in pandoc_blocks:
@@ -188,8 +189,8 @@ def extract_blocks(file, pandoc_blocks):
             if block_metadata != None:
                 <<<Save Code Block>>>
 
-            if block["t"] == "Para":
-                <<<Extract Block Metadata>>>
+            # if block["t"] == "Para":
+            <<<Extract Block Metadata>>>
 
             for key, val in block.items():
                 if type(val) == list:
@@ -199,13 +200,15 @@ def extract_blocks(file, pandoc_blocks):
 ```
 
 Blocks recognized by Stitch will be formatted as either a link or code text
-followed by a `:` then an actual code block.
+followed by a `:` then an actual code block. Code blocks are only searched for
+after its metadata is found.
 
 `Extract Block Metadata`:
 ```python
-if not ((len(block["c"]) == 2)
-    and (block["c"][0]["t"] in ["Code", "Link"])
-    and (block["c"][1] == {"t": "Str", "c": ":"})):
+if not ((type(block) == dict and "c" in block and len(block["c"]) >= 2)
+    and (block["c"][1] == {"t": "Str", "c": ":"})
+    and (type(block["c"][0]) == dict)
+    and (block["c"][0]["t"] in ["Code", "Link"])):
     continue
 
 block_metadata = block["c"][0]
@@ -214,7 +217,10 @@ continue
 
 ### Saving the Code Block
 
-It has to be ensured that the current block is of the type `CodeBlock`.
+It has to be ensured that the current block is of the type `CodeBlock`. This is
+because this is a check that happens immediately after a block's metadata is
+found, so if the current block is not of type `CodeBlock`, the metadata should
+be assumed to not be associated with anything and will be ignored.
 
 `Save Code Block`:
 ```python
@@ -225,7 +231,7 @@ if block["t"] != "CodeBlock":
 invalid_block = False
 ```
 
-Here are all of the keys used in the [JSON IR](./json_spec.md).
+Here are all of the keys used as specified by the [JSON IR](./json_spec.md).
 
 `+Save Code Block`:
 ```python
@@ -239,7 +245,7 @@ saved_block = {
 }
 ```
 
-The metadata
+The metadata contains information about the block that is needed for the JSON.
 
 `+Save Code Block`:
 ```python
@@ -314,6 +320,14 @@ for key, val in saved_block.items():
     cleaned_block[key] = val
 
 saved_blocks += [cleaned_block]
+```
+
+If `block_metadata` is not reset, then only the first block in a series of
+blocks will be extracted.
+
+`+Save Code Block`:
+```python
+block_metadata = None
 ```
 
 ## TODO: Implement Creating New Blocks When Appending to Non-existant Ones

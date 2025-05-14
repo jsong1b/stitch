@@ -78,10 +78,11 @@ def main():
 
         blocks += extract_blocks(file[1], unfiltered_blocks)
 
+    print(json.dumps({"blocks": blocks}), file = sys.stdout)
+
 
 def extract_blocks(file, pandoc_blocks):
     saved_blocks = []
-    cur_block = {}
     block_metadata = None
 
     for block in pandoc_blocks:
@@ -158,15 +159,17 @@ def extract_blocks(file, pandoc_blocks):
                     cleaned_block[key] = val
 
                 saved_blocks += [cleaned_block]
+                block_metadata = None
 
-            if block["t"] == "Para":
-                if not ((len(block["c"]) == 2)
-                    and (block["c"][0]["t"] in ["Code", "Link"])
-                    and (block["c"][1] == {"t": "Str", "c": ":"})):
-                    continue
-
-                block_metadata = block["c"][0]
+            # if block["t"] == "Para":
+            if not ((type(block) == dict and "c" in block and len(block["c"]) >= 2)
+                and (block["c"][1] == {"t": "Str", "c": ":"})
+                and (type(block["c"][0]) == dict)
+                and (block["c"][0]["t"] in ["Code", "Link"])):
                 continue
+
+            block_metadata = block["c"][0]
+            continue
 
             for key, val in block.items():
                 if type(val) == list:
