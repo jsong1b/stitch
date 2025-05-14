@@ -329,21 +329,3 @@ blocks will be extracted.
 ```python
 block_metadata = None
 ```
-
-## TODO: Implement Creating New Blocks When Appending to Non-existant Ones
-
-`Imports`:
-```python
-```
-
-`Main Function`:
-```python
-```
-
-`Functions`:
-```python
-```
-
-`Parse CLI Flags`:
-```python
-```

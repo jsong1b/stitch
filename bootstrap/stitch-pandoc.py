@@ -134,7 +134,7 @@ def extract_blocks(file, pandoc_blocks):
                         invalid_block = True
 
                     (
-                        saved_block["append"], 
+                        saved_block["append"],
                         saved_block["append_to_from"]
                     ) = saved_block["append"].split("@")
 

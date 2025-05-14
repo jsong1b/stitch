@@ -282,7 +282,7 @@ The referenced block is most likely in `blocks`.
 
 `+Expand Loop`:
 ```python
-reference_found = True
+reference_found = False
 for b in blocks:
     if ("name" not in b
         or ref_name != b["name"]
@@ -298,6 +298,7 @@ another block, that reference will not be expanded.
 
 `+Reference Found`:
 ```python
+reference_found = True
 (err, b["lines"]) = expand_refs(b, blocks, visited_blocks + [block])
 if err != None:
     if err == "Self-referential expansion":
@@ -368,36 +369,4 @@ for block in json_blocks:
                 file = sys.stderr
             )
             print(f"Skipping {block["export"]}...\033[0m", file = sys.stderr)
-```
-
----
-
-## TODO: Implement Creating New Blocks When Appending to Non-existant Ones
-
-`Main Function`:
-```python
-```
-
-`Imports`:
-```python
-```
-
-`Functions`:
-```python
-```
-
-`Test JSON Blocks`:
-```json
-```
-
-`Append Function`:
-```python
-```
-
-`Expand Loop`:
-```python
-```
-
-`Reference Found`:
-```python
 ```
